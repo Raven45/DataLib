@@ -1,3 +1,6 @@
+#ifndef EXCEPTION
+#define EXCEPTION
+
 #include "Object.h"
 
 namespace DataLib {
@@ -13,3 +16,5 @@ namespace DataLib {
 
 	};
 }
+
+#endif

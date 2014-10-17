@@ -2,6 +2,8 @@
 #ifndef OBJECT
 #define OBJECT
 
+#define DATALIB_DLL _declspec(dllexport)
+
 namespace DataLib {
 
 	typedef unsigned short int state;

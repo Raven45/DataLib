@@ -1,3 +1,6 @@
+#ifndef DIVIDEBYZERO
+#define DIVIDEBYZERO
+
 #include "Exception.h"
 
 namespace DataLib {
@@ -11,3 +14,5 @@ namespace DataLib {
 		}
 	};
 }
+
+#endif
