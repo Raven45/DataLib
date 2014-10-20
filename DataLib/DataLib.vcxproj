@@ -82,14 +82,16 @@
     <ClInclude Include="EmptyListException.h" />
     <ClInclude Include="Exception.h" />
     <ClInclude Include="DanglingPointerException.h" />
+    <ClInclude Include="List.hpp" />
     <ClInclude Include="MemoryException.h" />
     <ClInclude Include="Node.hpp" />
     <ClInclude Include="NodeDouble.hpp" />
-    <ClInclude Include="NodeFactory.h" />
+    <ClInclude Include="NodeFactory.hpp" />
     <ClInclude Include="NodeFactoryCache.hpp" />
     <ClInclude Include="NodeSingle.hpp" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectNotInitializedException.h" />
+    <ClInclude Include="Stack.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Exception.cpp" />

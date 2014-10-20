@@ -21,6 +21,7 @@ namespace DataLib {
 	public:
 		Object();
 		state GetState();
+		bool IsInValidState();
 
 	protected:
 		state State;
