@@ -1,0 +1,5 @@
+﻿  Source.cpp
+  Object.cpp
+  Exception.cpp
+  Generating Code...
+LINK : fatal error LNK1104: cannot open file 'kernel32.lib'
