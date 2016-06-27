@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="Core\Exception.h" />
     <ClInclude Include="Core\Object.h" />
+    <ClInclude Include="List.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

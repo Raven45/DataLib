@@ -1,5 +1,6 @@
 ﻿  Source.cpp
+m:\documents\github\datalib\datalib\datalib\source.cpp(16): warning C4018: '<': signed/unsigned mismatch
   Object.cpp
   Exception.cpp
   Generating Code...
-LINK : fatal error LNK1104: cannot open file 'kernel32.lib'
+  DataLib.vcxproj -> M:\Documents\GitHub\DataLib\DataLib\Debug\DataLib.exe

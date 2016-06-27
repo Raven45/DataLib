@@ -21,6 +21,6 @@ DataLib::Exception::Exception() {
 	Error = "Generic Error";
 }
 
-char* DataLib::Exception::GetError() {
+const char* DataLib::Exception::GetError() {
 	return Error;
 }

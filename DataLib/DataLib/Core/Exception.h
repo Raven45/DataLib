@@ -14,23 +14,26 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ************************************************************************/
 
-
 #ifndef DATALIB_EXCEPTION
 #define DATALIB_EXCEPTION
 
 namespace DataLib {
+
+	static const char* EXCEPTION_LOCKED				= "DataLib::0x0001: Object is write protected!";
+	static const char* EXCEPTION_STACK_OVERFLOW		= "DataLib::0x0002: Call stack has overflown!";
 	
 	class Exception {
 		
 		friend class Object;
+		//friend class List;
 		
 	public:
-		char* GetError();
+		const char* GetError();
 		
-	private:
+	//private:
 		Exception();
 		
-		char* Error;
+		const char* Error;
 		
 	};
 }

@@ -28,7 +28,7 @@ namespace DataLib {
 		Uninitialized,
 		Empty,
 		Error,
-		Invalid,
+		Locked,
 		Valid
 	};
 	
@@ -106,7 +106,7 @@ namespace DataLib {
 			0 = Uninitialized
 			1 = Empty
 			2 = Error
-			3 = Invalid
+			3 = Locked
 			4 = Valid
 		****************************************************************/
 		unsigned int 	GetState() 	const;
@@ -147,11 +147,15 @@ namespace DataLib {
 		arbitrary name to the object.
 		****************************************************************/
 		void			SetName(char* Name);
+
+		void			WriteLock();
+		void			WriteUnlock();
 		
-	private:
+	protected:
 	
 		char* Name;
 		unsigned int State;
+		unsigned int SavedState;
 
 		/****************************************************************
 		Name:			GenerateRandom

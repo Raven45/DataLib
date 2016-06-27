@@ -19,6 +19,12 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{0bf62aa3-ccf6-4170-a0f3-0d7e5860e00b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ListLib">
+      <UniqueIdentifier>{6009fbbf-e188-4dba-ad64-8f6be84d324e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ListLib">
+      <UniqueIdentifier>{080ad19e-4cda-4969-9752-f1ddd40341e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -37,6 +43,9 @@
     </ClInclude>
     <ClInclude Include="Core\Object.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="List.hpp">
+      <Filter>Header Files\ListLib</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

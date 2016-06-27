@@ -29,7 +29,7 @@ DataLib::Object::Object(): State(State::Uninitialized) {
 
 	try {
 		this->Name = new char[SIZE_OF_NAME];
-		Name = "";
+		Name = "DataLib::Object";
 	}
 	catch (...) {
 		this->Name = nullptr;
@@ -171,10 +171,25 @@ void DataLib::Object::SetName(char* Name) {
 	this->Name = Name;
 }
 
+void DataLib::Object::WriteLock() {
+
+	if (State != State::Uninitialized || State != State::Error) {
+		SavedState = State;
+		State = State::Locked;
+	}
+}
+
+void DataLib::Object::WriteUnlock() {
+
+	if (State == State::Locked) {
+		State = SavedState;
+	}
+}
+
 /****************************************************************
 Name:			GenerateRandom
 Input:			Lower: The lower limit of the output.
-Upper: The upper limit of the output.
+Upper:			The upper limit of the output.
 Output:			A psuedo random number
 Description:	A helper function used to generate a random
 number for the "Random" function.
@@ -211,7 +226,9 @@ unsigned int DataLib::Object::GenerateRandom(unsigned int Lower, unsigned int Up
 	//Set bits in return value.
 	unsigned int _Key = 0;
 	for (int i = 1; i < sizeof(unsigned int)* 8 - 1; i++) {
-		if (Z[i] != 0) { _Key = _Key | Power(2, i); }
+		//use i-1 for return value, else the result will always be even.
+		if (Z[i] != 0) { _Key = _Key | Power(2, i-1); }
+		//if (Z[i] == 0) { _Key = _Key | 1 << i-1; }
 	}
 	
 	if (Lower == Upper) {
