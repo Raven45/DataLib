@@ -28,10 +28,6 @@ namespace DataLib {
 	template <class DataType>
 	class List : public Object {
 
-		typedef bool(*callback_compare)(DataType, DataType);
-		typedef bool(List<DataType>::*method_compare)(DataType, DataType);
-		
-
 	private:
 
 		class Node {
@@ -65,28 +61,170 @@ namespace DataLib {
 
 	public:
 
+		/****************************************************************
+		Name:			Default Constructor
+		Input:			N/A
+		Output:			N/A
+		Description:	The default constructor will initialize the list
+		to an empty list, and then set the internal state to the "empty"
+		state.
+		****************************************************************/
 		List();
+
+		/****************************************************************
+		Name:			Copy Constructor
+		Input:			N/A
+		Output:			N/A
+		Description:	The copy constructor will make a copy of the
+		list.
+		****************************************************************/
 		List(List<DataType> &Copy);
+
+		/****************************************************************
+		Name:			Copy Constructor
+		Input:			Head: Pointer to the array
+						Length: the length of the array.
+		Output:			N/A
+		Description:	An alternate constructor that allows a standard
+		C-style array to be converted to a list.
+		****************************************************************/
 		List(DataType* Head, unsigned int Length);
 		~List();
 
+		/****************************************************************
+		Name:			IsEmpty
+		Input:			N/A
+		Output:			"true" if list is empty.
+						"false" if list is not empty.
+		Description:	Returns whether or not the list is in an empty
+						state. Returns true if the list is empty, else
+						it returns false.
+		****************************************************************/
 		bool			IsEmpty() const;
+
+		/****************************************************************
+		Name:			GetSize
+		Input:			N/A
+		Output:			Size of the list
+		Description:	Returns the current size of the list as an
+						unsigned integer.
+		****************************************************************/
 		unsigned int	GetSize() const;
+
+		/****************************************************************
+		Name:			IsMoveToFrontEnabled
+		Input:			N/A
+		Output:			"true" if move to front is enabled.
+						"false" if move to front is not enabled.
+		Description:	Returns whether or not "move to front" is 
+						enabled. 
+		****************************************************************/
 		bool			IsMoveToFrontEnabled() const;
+
+		/****************************************************************
+		Name:			EnableMoveToFront
+		Input:			N/A
+		Output:			N/A
+		Description:	Enables "Move to front."
+		****************************************************************/
 		void			EnableMoveToFront();
+
+		/****************************************************************
+		Name:			EnableMoveToFront
+		Input:			N/A
+		Output:			N/A
+		Description:	Disables "Move to front."
+		****************************************************************/
 		void			DisableMoveToFront();
 
+		/****************************************************************
+		Name:			Insert
+		Input:			"Data": A single data element to be inserted into
+							the list.
+						"Position": indicates at which position in the
+							list the specified element of data is to be
+							inserted.
+		Output:			"true": if the operation was succesful.
+						"false": if the operation failed or threw an
+							error.
+		Description:	Inserts a piece of data into the list at the
+						specified position. A position of "0" will
+						insert the element to the front of the list, and 
+						a position greater than the list's size will
+						insert the element at the end of the list. 
+		****************************************************************/
 		bool			Insert(DataType Data, unsigned int Position);
+
+		/****************************************************************
+		Name:			Insert
+		Input:			"Data": An array of data to be inserted into
+							the list.
+						"Position": indicates at which position in the
+							list the specified element of data is to be
+							inserted.
+						"Length": The length of the array to be inserted.
+		Output:			"true": if the operation was succesful.
+						"false": if the operation failed or threw an
+							error.
+		Description:	Inserts an array of data into the list at the
+							specified position. A position of "0" will
+							insert the element to the front of the list, and
+							a position greater than the list's size will
+							insert the element at the end of the list.
+		****************************************************************/
+		bool			Insert(DataType* Data, unsigned int Position, unsigned int Length);
+
+		/****************************************************************
+		Name:			Remove
+		Input:			Position: The position at which to remove a node
+							from.
+		Output:			Returns the node that was removed from the list.
+		Description:	Removes a node at the position in the list
+							indicated by "Position." A position of 0
+							will remove the first node in the list, and
+							a position greater than the list's size will
+							remove the last node in the list. The 
+							node that was removed is then returned by
+							value to the caller.
+		****************************************************************/
 		Node			Remove(unsigned int Position);
 
+		/****************************************************************
+		Name:			Sort
+		Input:			N/A
+		Output:			"true": the sort operation was succesful.
+						"false": errors were encountered during the sort.
+		Description:	Sorts the list in ascending order. If the list
+							is smaller than 4,000 nodes, recursive
+							mergesort is used to sort the list. However,
+							if the list is greater than 4,000 nodes, then
+							an iterative mergesort is used to sort the 
+							list.
+
+							This function is reliant on the DataType of
+							the List having the comparison operators
+							overloaded.
+		****************************************************************/
 		bool			Sort();
 
+		/****************************************************************
+		Name:			Search
+		Input:			SearchTerm: the node to search for.
+		Output:			A pointer to the first matching node in the list.
+		Description:	Searches for a node that matches the value in
+							the supplied node "SearchTerm." This 
+							variation of "Search" will return  a pointer
+							to the first node that is a match. A null
+							pointer will be returned if the search term
+							was not found in the list.
+
+						If "Move to front" is enabled, then the first
+							matching node will be moved to the front of 
+							the list.
+		****************************************************************/
 		Node*			Search(Node SearchTerm);
-		Node			Search(char * SearchTerm);
 		Node			SearchAndRemove(Node SearchTerm);
-		Node			SearchAndRemove(char* SearchTerm);
 		int				SearchPosition(Node SearchTerm) const;
-		int				SearchPosition(char * SearchTerm) const;
 
 		const Node&		operator[](const int Index) const;
 		Node&			operator[](const int Index);
@@ -156,15 +294,15 @@ namespace DataLib {
 
 		Node** WorkingList = new Node*[GetSize()];
 		//Node* P = TopOfList;
-		int k = 0;
-		int j;
+		unsigned int k = 0;
+		unsigned int j;
 		for (k = 0; k < Size; k++) {
 			WorkingList[k] = P;
 			P = P->Next;
 			WorkingList[k]->Next = nullptr;
 		}
 
-		for (int i = Size; i > 1; i = (i + 1) / 2) {
+		for (unsigned int i = Size; i > 1; i = (i + 1) / 2) {
 			for (j = k = 0; k < i; j++, k += 2) {
 				WorkingList[j] = MergeIterative(WorkingList[k], WorkingList[k + 1]);
 			}
@@ -276,6 +414,7 @@ namespace DataLib {
 
 	template<class DataType>
 	inline List<DataType>::List() {
+
 		this->SetName("DataLib::List");
 		this->TopOfList = nullptr;
 		this->Size = 0;
@@ -290,7 +429,6 @@ namespace DataLib {
 	inline List<DataType>::List(DataType * Head, unsigned int Length) {
 
 		if (Head == nullptr || Length == 0) {
-
 			State = State::Empty;
 		}
 
@@ -358,9 +496,13 @@ namespace DataLib {
 			//Empty list case.
 			if (IsEmpty()) {
 
+				WriteLock();
+
 				TopOfList = new Node(Data);
 				State = State::Valid;
 				Size++;
+
+				WriteUnlock();
 			}
 
 			else if (State == State::Valid) {
@@ -393,6 +535,84 @@ namespace DataLib {
 
 		catch (...) {
 			return false;
+		}
+	}
+
+	template<class DataType>
+	inline bool List<DataType>::Insert(DataType * Data, unsigned int Position, unsigned int Length) {
+		
+
+		try {
+
+			//Empty list case.
+			if (IsEmpty()) {
+
+				WriteLock();
+
+				for (unsigned int i = 0; i < Length; i++) {
+					try {
+						Insert(Data[i]);
+					}
+					catch (...) {
+						break;
+					}
+				}
+
+				State = State::Valid;
+
+				WriteUnlock();
+			}
+
+			else if (State == State::Valid) {
+
+				WriteLock();
+
+				//Insert before TopOfList.
+				if (Position == 0) {
+					Node* T = new Node(Data, TopOfList);
+					TopOfList = T;
+				}
+
+				//Insert in middle of list.
+				else {
+					Node* P = Seek(--Position);
+					Node* T = new Node(Data, P->Next);
+					P->Next = T;
+				}
+				Size++;
+
+				WriteUnlock();
+			}
+
+			else {
+				return false;
+			}
+
+			return true;
+		}
+
+		catch (...) {
+			return false;
+		}
+
+
+
+		if (Head == nullptr || Length == 0) {
+			State = State::Empty;
+		}
+
+		else {
+
+			for (unsigned int i = 0; i < Length; i++) {
+				try {
+					Insert(Head[i]);
+				}
+				catch (...) {
+					break;
+				}
+			}
+
+			State = State::Valid;
 		}
 	}
 
@@ -499,12 +719,75 @@ namespace DataLib {
 
 			for (unsigned int i = 0; i < Size; i++) {
 
-				if (P->Data == SearchTerm.Data) {
+				if (P->Next != nullptr && P->Next->Data == SearchTerm.Data) {
 
 					if (IsMoveToFrontEnabled()) {
-						Swap(TopOfList, P);
+						
+						Node * temp = P->Next;
+
+						if (temp != nullptr) {
+							P->Next = temp->Next;
+							temp->Next = TopOfList;
+							TopOfList = temp;
+						}
+
 					}
-					return P;
+					return P->Next;
+				}
+
+				else {
+					P = P->Next;
+				}
+			}
+			return nullptr;
+		}
+	}
+
+	template<class DataType>
+	inline typename List<DataType>::Node List<DataType>::SearchAndRemove(Node SearchTerm) {
+		
+		if (State != State::Valid) {
+			return nullptr;
+		}
+		else {
+
+			Node* P = TopOfList;
+
+			for (unsigned int i = 0; i < Size; i++) {
+
+				if (P->Data == SearchTerm.Data) {
+
+					Node T(P);
+
+					WriteLock();
+					Remove(i);
+					WriteUnlock();
+
+					return T;
+				}
+				else {
+					P = P->Next;
+				}
+			}
+			return nullptr;
+		}
+	}
+
+	template<class DataType>
+	inline int List<DataType>::SearchPosition(Node SearchTerm) const {
+		
+		if (State != State::Valid) {
+			return nullptr;
+		}
+		else {
+
+			Node* P = TopOfList;
+
+			for (unsigned int i = 0; i < Size; i++) {
+
+				if (P->Data == SearchTerm.Data) {
+
+					return i;
 				}
 				else {
 					P = P->Next;
@@ -558,7 +841,7 @@ namespace DataLib {
 
 	template<class DataType>
 	inline typename List<DataType>::Node& List<DataType>::operator[](const int Index) {
-		return Seek(Index);
+		return *Seek(Index);
 	}
 
 }
