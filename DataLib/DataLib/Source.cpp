@@ -69,11 +69,12 @@ void List_TestCase3() {
 	}
 }
 
-void main(){
+int main(){
 
 	//List_TestCase1();
 	//List_TestCase2();
 	List_TestCase3();
 
-	while (1);
+	//while (1);
+	return 0;
 }

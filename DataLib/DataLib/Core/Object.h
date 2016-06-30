@@ -19,6 +19,7 @@ limitations under the License.
 #define DATALIB_OBJECT
 
 #include <stdlib.h>
+#include "Config.h"
 
 namespace DataLib {
 

@@ -17,8 +17,8 @@ limitations under the License.
 #ifndef DATALIB_LIST
 #define DATALIB_LIST
 
-#include "Core\Exception.h"
-#include "Core\Object.h"
+#include "Core/Exception.h"
+#include "Core/Object.h"
 
 
 namespace DataLib {
@@ -222,7 +222,7 @@ namespace DataLib {
 							matching node will be moved to the front of 
 							the list.
 		****************************************************************/
-		Node*			Search(Node SearchTerm);
+		Node*			Search(DataType SearchTerm);
 		Node			SearchAndRemove(Node SearchTerm);
 		int				SearchPosition(Node SearchTerm) const;
 
@@ -253,7 +253,7 @@ namespace DataLib {
 	template<class DataType>
 	inline bool List<DataType>::Swap(Node * A, Node * B) {
 
-		if (State != State::Valid) {
+		if (State != Valid){
 			return false;
 		}
 		else {
@@ -415,10 +415,10 @@ namespace DataLib {
 	template<class DataType>
 	inline List<DataType>::List() {
 
-		this->SetName("DataLib::List");
+		this->SetName((char*)"DataLib::List");
 		this->TopOfList = nullptr;
 		this->Size = 0;
-		State = State::Empty;
+		State = Empty;
 	}
 
 	template<class DataType>
@@ -429,7 +429,7 @@ namespace DataLib {
 	inline List<DataType>::List(DataType * Head, unsigned int Length) {
 
 		if (Head == nullptr || Length == 0) {
-			State = State::Empty;
+			State = Empty;
 		}
 
 		else {
@@ -443,14 +443,14 @@ namespace DataLib {
 				}
 			}
 
-			State = State::Valid;
+			State = Valid;
 		}
 	}
 
 	template<class DataType>
 	inline List<DataType>::~List() {
 
-		State = State::Uninitialized;
+		State = Uninitialized;
 		
 		if (TopOfList != nullptr) {
 			delete TopOfList;
@@ -460,7 +460,7 @@ namespace DataLib {
 	template<class DataType>
 	inline bool List<DataType>::IsEmpty() const {
 
-		if (State == State::Empty) {
+		if (State == Empty) {
 			return true;
 		}
 		else {
@@ -499,13 +499,14 @@ namespace DataLib {
 				WriteLock();
 
 				TopOfList = new Node(Data);
-				State = State::Valid;
+				
+				State = Valid;
 				Size++;
 
 				WriteUnlock();
 			}
 
-			else if (State == State::Valid) {
+			else if (State == Valid) {
 
 				WriteLock();
 
@@ -540,80 +541,7 @@ namespace DataLib {
 
 	template<class DataType>
 	inline bool List<DataType>::Insert(DataType * Data, unsigned int Position, unsigned int Length) {
-		
-
-		try {
-
-			//Empty list case.
-			if (IsEmpty()) {
-
-				WriteLock();
-
-				for (unsigned int i = 0; i < Length; i++) {
-					try {
-						Insert(Data[i]);
-					}
-					catch (...) {
-						break;
-					}
-				}
-
-				State = State::Valid;
-
-				WriteUnlock();
-			}
-
-			else if (State == State::Valid) {
-
-				WriteLock();
-
-				//Insert before TopOfList.
-				if (Position == 0) {
-					Node* T = new Node(Data, TopOfList);
-					TopOfList = T;
-				}
-
-				//Insert in middle of list.
-				else {
-					Node* P = Seek(--Position);
-					Node* T = new Node(Data, P->Next);
-					P->Next = T;
-				}
-				Size++;
-
-				WriteUnlock();
-			}
-
-			else {
-				return false;
-			}
-
-			return true;
-		}
-
-		catch (...) {
-			return false;
-		}
-
-
-
-		if (Head == nullptr || Length == 0) {
-			State = State::Empty;
-		}
-
-		else {
-
-			for (unsigned int i = 0; i < Length; i++) {
-				try {
-					Insert(Head[i]);
-				}
-				catch (...) {
-					break;
-				}
-			}
-
-			State = State::Valid;
-		}
+		return false;
 	}
 
 	template<class DataType>
@@ -624,20 +552,20 @@ namespace DataLib {
 		}
 
 		//Empty list condition.
-		if (State == State::Empty) {
+		if (State == Empty) {
 			DataLib::Exception EmptyCondition;
 			EmptyCondition.Error = "Attempt to remove node from empty list!";
 			throw EmptyCondition;
 		}
 
-		else if (State == State::Locked) {
+		else if (State == Locked) {
 			DataLib::Exception EmptyCondition;
 			EmptyCondition.Error = EXCEPTION_LOCKED;
 			throw EmptyCondition;
 		}
 
 		//Non-empty, and valid data structure condition.
-		else if (State == State::Valid) {
+		else if (State == Valid) {
 
 			WriteLock();
 
@@ -645,7 +573,7 @@ namespace DataLib {
 			if (Position == 0) {
 				Node* P = TopOfList->Next;
 				TopOfList->Next = nullptr;
-				if (P == nullptr) { State = State::Empty; }
+				if (P == nullptr) { State = Empty; }
 				Node ReturnValue(*TopOfList);
 				delete TopOfList;
 				TopOfList = P;
@@ -681,16 +609,16 @@ namespace DataLib {
 			UnknownError.Error = "An unknown error occurred!";
 			throw UnknownError;
 		}
-		return DataType();
+		//return DataType();
 	}
 
 	template<class DataType>
 	inline bool List<DataType>::Sort() {
 		
-		if (State == State::Empty || Size == 1) {
+		if (State == Empty || Size == 1) {
 			return true;
 		}
-		else if (State == State::Valid) {
+		else if (State == Valid) {
 			if (Size <= 4000) {
 				TopOfList = MergeSort(TopOfList);
 			}
@@ -708,9 +636,9 @@ namespace DataLib {
 	}
 
 	template<class DataType>
-	inline typename List<DataType>::Node * List<DataType>::Search(Node SearchTerm) {
+	inline typename List<DataType>::Node * List<DataType>::Search(DataType SearchTerm) {
 
-		if (State != State::Valid) {
+		if (State != Valid) {
 			return nullptr;
 		}
 		else {
@@ -719,7 +647,7 @@ namespace DataLib {
 
 			for (unsigned int i = 0; i < Size; i++) {
 
-				if (P->Next != nullptr && P->Next->Data == SearchTerm.Data) {
+				if (P->Next != nullptr && P->Next->Data == SearchTerm) {
 
 					if (IsMoveToFrontEnabled()) {
 						
@@ -746,7 +674,7 @@ namespace DataLib {
 	template<class DataType>
 	inline typename List<DataType>::Node List<DataType>::SearchAndRemove(Node SearchTerm) {
 		
-		if (State != State::Valid) {
+		if (State != Valid) {
 			return nullptr;
 		}
 		else {
@@ -776,7 +704,7 @@ namespace DataLib {
 	template<class DataType>
 	inline int List<DataType>::SearchPosition(Node SearchTerm) const {
 		
-		if (State != State::Valid) {
+		if (State != Valid) {
 			return nullptr;
 		}
 		else {
