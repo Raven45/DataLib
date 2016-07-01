@@ -24,7 +24,13 @@ limitations under the License.
 namespace DataLib {
 
 	
-
+	/*******************************************************************
+	Class Name:		List
+	Description:	The "OList" object is ta singly linked list of which
+						allows for any datatype to be stored and 
+						manipulated. It features sorting functionality
+						and several search optimizations. 
+	*******************************************************************/
 	template <class DataType>
 	class List : public Object {
 
@@ -46,8 +52,35 @@ namespace DataLib {
 			Node& operator=(const DataType& B);
 		};
 
+		/***************************************************************
+		Name:			TopOfList
+		Type:			Pointer to a buffer of nodes.
+		Description:	TopOfList is the pointer to the actual data
+						structure in memory; if we lose TopOfList, we
+						lose the entire linked list. If this is null,
+						then more than likely the list is empty.
+		***************************************************************/
 		Node* TopOfList;
+		
+		/***************************************************************
+		Name:			Size
+		Type:			Unsigned, 32 bit integer.
+		Description:	Size records the number of nodes in the list.
+		***************************************************************/
 		unsigned int Size;
+		
+		/***************************************************************
+		Name:			MoveToFront
+		Type:			Boolean
+		Description:	MoveToFront is a control flag that signals
+						whether or not "MoveToFront" functionality is
+						enabled. MoveToFront will move a found node to
+						the front of the list during a search operation
+						to help improve future search times. The idea
+						is that nodes that are commonly searched for are
+						moved to the front of the list and ranked by
+						how recent they've been searched for. 
+		***************************************************************/
 		bool MoveToFront;
 
 		Node* Seek(unsigned int Position);
@@ -90,6 +123,16 @@ namespace DataLib {
 		****************************************************************/
 		List(DataType* Head, unsigned int Length);
 		~List();
+		
+		/****************************************************************
+		Name:			Clone
+		Input:			N/A
+		Output:			N/A
+		Description:	Clone will make and return a pointer to a copy
+		of the object. Useful for copying to already existing objects.
+		Overloaded from the Object superclass.
+		****************************************************************/
+		virtual List<DataType>* Clone() const;
 
 		/****************************************************************
 		Name:			IsEmpty
@@ -223,9 +266,50 @@ namespace DataLib {
 							the list.
 		****************************************************************/
 		Node*			Search(DataType SearchTerm);
-		Node			SearchAndRemove(Node SearchTerm);
+		
+		/****************************************************************
+		Name:			SearchAndRemove
+		Input:			SearchTerm: the node to search for.
+		Output:			The first node that matches the search term.
+		Description:	Searches for a node that matches the value in
+							the supplied node "SearchTerm." This 
+							variation of "Search" will return  a pointer
+							to the first node that is a match. A null
+							pointer will be returned if the search term
+							was not found in the list.
+
+						This variation of the search features will
+							remove the node from the list once it's 
+							found. 
+		****************************************************************/
+		Node*			SearchAndRemove(Node SearchTerm);
+		
+		/****************************************************************
+		Name:			SearchPosition
+		Input:			SearchTerm: the node to search for.
+		Output:			The position in the list where the the first
+							matching node was found.
+		Description:	Searches for a node that matches the value in
+							the supplied node "SearchTerm." This 
+							variation of "Search" will return  the
+							position of which the node was found. A 
+							negative number will be returned if no node
+							was found matching the search term.
+		****************************************************************/
 		int				SearchPosition(Node SearchTerm) const;
 
+		/****************************************************************
+		Name:			Subscript Operators
+		Input:			Index: the specified element in the list to
+							return to caller.
+		Output:			Either a Node or a constant Node specified by
+							the supplied index.
+		Description:	Returns the element in the list specified by
+							Index; allows the linked list object to be
+							used like an old style C array/buffer.
+							Included are both non-constant and constant
+							overloads of the subscript operator.
+		****************************************************************/
 		const Node&		operator[](const int Index) const;
 		Node&			operator[](const int Index);
 	};
@@ -423,15 +507,62 @@ namespace DataLib {
 
 	template<class DataType>
 	inline List<DataType>::List(List<DataType>& Copy) {
+		
+		//Set default values.
+		this->SetName((char*)"DataLib::List");
+		this->TopOfList = nullptr;
+		this->Size = 0;
+		
+		//Lock the list until after the list is copied.
+		State = Locked;
+		
+		if (Copy.GetSize() != 0) {
+		
+			Node* Copy_P = Copy.TopOfList;
+			Node* This_P = this->TopOfList;
+			Node* This_T = this->TopOfList;
+			
+			//Create first node
+			This_P = new Node(Copy_P, nullptr);
+			This_T = This_P;
+			Copy_P = Copy_P->Next;
+			
+			//Copy subsequent nodes.
+			while (Copy_P != nullptr) {
+				This_P = new Node(Copy_P, nullptr);
+				This_T->Next = This_P;
+				This_T = This_P;
+				Copy_P = Copy_P->Next;
+			}
+			
+			//Copy the size.
+			this->Size = Copy.Size;
+			
+			//Copy the state as well.
+			this->State = Copy.State;
+		}
+		else {
+			this->State = Copy.State;
+		}
 	}
 
 	template<class DataType>
 	inline List<DataType>::List(DataType * Head, unsigned int Length) {
 
+		//Set default values.
+		this->SetName((char*)"DataLib::List");
+		this->TopOfList = nullptr;
+		this->Size = 0;
+		
+		//Lock the list.
+		State = Locked;
+
+		//If empty buffer is empty
 		if (Head == nullptr || Length == 0) {
 			State = Empty;
 		}
 
+		//Copy data
 		else {
 
 			for (unsigned int i = 0; i < Length; i++) {
@@ -450,11 +581,20 @@ namespace DataLib {
 	template<class DataType>
 	inline List<DataType>::~List() {
 
-		State = Uninitialized;
+		//this should be locked here, to prevent other threads
+		//from mucking around with data as it's being deleted.
+		State = Locked;
 		
 		if (TopOfList != nullptr) {
 			delete TopOfList;
 		}
+	}
+
+	template<class DataType>
+	List<DataType>* List<DataType>::Clone() const {
+		
+		List Copy(*this);
+		return &Copy;
 	}
 
 	template<class DataType>
@@ -541,7 +681,22 @@ namespace DataLib {
 
 	template<class DataType>
 	inline bool List<DataType>::Insert(DataType * Data, unsigned int Position, unsigned int Length) {
-		return false;
+		
+			//Empty list case.
+		if (State == Valid) {
+
+			WriteLock();
+				
+			for (unsigned int i = Length; i > 0; i--) {
+				Insert(Data[i], Position);
+			}
+
+			WriteUnlock();
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	template<class DataType>
@@ -672,7 +827,7 @@ namespace DataLib {
 	}
 
 	template<class DataType>
-	inline typename List<DataType>::Node List<DataType>::SearchAndRemove(Node SearchTerm) {
+	inline typename List<DataType>::Node * List<DataType>::SearchAndRemove(Node SearchTerm) {
 		
 		if (State != Valid) {
 			return nullptr;
@@ -691,7 +846,7 @@ namespace DataLib {
 					Remove(i);
 					WriteUnlock();
 
-					return T;
+					return &T;
 				}
 				else {
 					P = P->Next;
@@ -721,7 +876,7 @@ namespace DataLib {
 					P = P->Next;
 				}
 			}
-			return nullptr;
+			return -1;
 		}
 	}
 
@@ -749,7 +904,10 @@ namespace DataLib {
 	}
 
 	template<class DataType>
-	inline List<DataType>::Node::~Node() {}
+	inline List<DataType>::Node::~Node() {
+		delete Next;
+		Next = nullptr;
+	}
 
 	template<class DataType>
 	inline List<DataType>::Node::operator DataType() const {
