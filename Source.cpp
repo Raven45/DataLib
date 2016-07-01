@@ -3,6 +3,19 @@
 
 
 
+template <class DataType>
+class CompareTest: public DataLib::Comparator<DataType> {
+	virtual bool Compare(DataType A, DataType B) {
+		if (B >= A) {
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
+};
+
+
 
 /****************************************************************
 Name:			List Test Case 1
@@ -69,10 +82,25 @@ void List_TestCase3() {
 	}
 }
 
+void List_TestCase4() {
+
+	DataLib::List<unsigned int> A;
+	CompareTest<unsigned int> C;
+	
+	for (int i = 0; i < 5000; i++) {
+		A.Insert(A.Random(), 0);
+	}
+	A.Sort(&C);
+	int size = A.GetSize();
+	for (int i = 0; i < size; i++) {
+		std::cout << i << ": " << A.Remove(0) << std::endl;
+	}
+}
+
 int main(){
 
 	//List_TestCase1();
-	List_TestCase2();
+	List_TestCase4();
 	//List_TestCase3();
 
 	//while (1);

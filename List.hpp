@@ -19,6 +19,7 @@ limitations under the License.
 
 #include "Core/Exception.h"
 #include "Core/Object.h"
+#include "Core/Comparator.h"
 
 
 namespace DataLib {
@@ -87,9 +88,13 @@ namespace DataLib {
 		bool Swap(Node* A, Node* B);
 
 		Node* MergeSort(Node* P);
+		Node* MergeSort(Node* P, Comparator<DataType>* Compare);
 		Node* MergeSortIterative(Node* P);
+		Node* MergeSortIterative(Node* P, Comparator<DataType>* Compare);
 		Node* Merge(Node* A, Node* B);
+		Node* Merge(Node* A, Node* B, Comparator<DataType>* Compare);
 		Node* MergeIterative(Node* A, Node* B);
+		Node* MergeIterative(Node* A, Node* B, Comparator<DataType>* Compare);
 		Node* Split(Node* P);
 
 	public:
@@ -123,16 +128,6 @@ namespace DataLib {
 		****************************************************************/
 		List(DataType* Head, unsigned int Length);
 		~List();
-		
-		/****************************************************************
-		Name:			Clone
-		Input:			N/A
-		Output:			N/A
-		Description:	Clone will make and return a pointer to a copy
-		of the object. Useful for copying to already existing objects.
-		Overloaded from the Object superclass.
-		****************************************************************/
-		virtual List<DataType>* Clone() const;
 
 		/****************************************************************
 		Name:			IsEmpty
@@ -249,6 +244,7 @@ namespace DataLib {
 							overloaded.
 		****************************************************************/
 		bool			Sort();
+		bool			Sort(Comparator<DataType> * Compare);
 
 		/****************************************************************
 		Name:			Search
@@ -365,7 +361,21 @@ namespace DataLib {
 		Node* half = Middle->Next;
 		Middle->Next = nullptr;
 
-		return MergeIterative(MergeSort(P), MergeSort(half));
+		return Merge(MergeSort(P), MergeSort(half));
+		
+	}
+	
+	template<class DataType>
+	inline typename List<DataType>::Node * List<DataType>::MergeSort(Node * P, Comparator<DataType>* Compare) {
+		
+		if (P == nullptr || P->Next == nullptr) {
+			return P;
+		}
+		Node* Middle = Split(P);
+		Node* half = Middle->Next;
+		Middle->Next = nullptr;
+
+		return Merge(MergeSort(P, Compare), MergeSort(half, Compare), Compare);
 		
 	}
 
@@ -394,6 +404,32 @@ namespace DataLib {
 		}
 		return WorkingList[0];
 	}
+	
+	template<class DataType>
+	inline typename List<DataType>::Node * List<DataType>::MergeSortIterative(Node * P, Comparator<DataType>* Compare) {
+		
+		if (P == nullptr || P->Next == nullptr) {
+			return P;
+		}
+
+		Node** WorkingList = new Node*[GetSize()];
+		//Node* P = TopOfList;
+		unsigned int k = 0;
+		unsigned int j;
+		for (k = 0; k < Size; k++) {
+			WorkingList[k] = P;
+			P = P->Next;
+			WorkingList[k]->Next = nullptr;
+		}
+
+		for (unsigned int i = Size; i > 1; i = (i + 1) / 2) {
+			for (j = k = 0; k < i; j++, k += 2) {
+				WorkingList[j] = MergeIterative(WorkingList[k], WorkingList[k + 1], Compare);
+			}
+			WorkingList[j] = nullptr;
+		}
+		return WorkingList[0];
+	}
 
 	template<class DataType>
 	inline typename List<DataType>::Node * List<DataType>::Merge(Node * A, Node * B) {
@@ -410,6 +446,25 @@ namespace DataLib {
 		}
 		else {
 			B->Next = Merge(A, B->Next);
+			return B;
+		}
+	}
+	
+	template<class DataType>
+	inline typename List<DataType>::Node * List<DataType>::Merge(Node * A, Node * B, Comparator<DataType>* Compare) {
+
+		if (A == nullptr) {
+			return B;
+		}
+		else if (B == nullptr) {
+			return A;
+		}
+		else if (Compare->Compare(A->Data, B->Data)) {
+			A->Next = Merge(A->Next, B, Compare);
+			return A;
+		}
+		else {
+			B->Next = Merge(A, B->Next, Compare);
 			return B;
 		}
 	}
@@ -454,6 +509,70 @@ namespace DataLib {
 				else//when head is already set
 				{
 					if (A->Data <= B->Data) {
+						if (previous->Next != A)
+							previous->Next = A;
+						A = A->Next;//Moved A forward but keeping B at the same position
+					}
+					else {
+						if (previous->Next != B)
+							previous->Next = B;
+						B = B->Next; //Moved B forward but keeping A at the same position
+					}
+					previous = previous->Next;//Moving the Output list pointer forward
+				}
+			}
+			//at the end either one of the list would finish
+			//and we have to append the other list to the output list
+			if (!A)
+				previous->Next = B;
+
+			if (!B)
+				previous->Next = A;
+
+			return head; //returning the head of the output list
+		}
+	}
+	
+	template<class DataType>
+	inline typename List<DataType>::Node * List<DataType>::MergeIterative(Node * A, Node * B, Comparator<DataType>* Compare) {
+		
+		//if both lists are empty
+		if (!A && !B) {
+			return 0;
+		}
+		//either of list is empty
+		else if (!A) return B;
+		else if (!B) return A;
+		else {
+			Node* head = NULL;//this will be the head of the newList
+			Node* previous = NULL;//this will act as the
+
+								  /* In this algorithm we will keep the
+								  previous pointer that will point to the last node of the output list.
+								  And, as given we have A & B as pointer to the given lists.
+
+								  The algorithm will keep on going untill either one of the list become empty.
+								  Inside of the while loop, it will divide the algorithm in two parts:
+								  - First, if the head of the output list is not obtained yet
+								  - Second, if head is already there then we will just compare the values and keep appending to the 'previous' pointer.
+								  When one of the list become empty we will append the other 'left over' list to the output list.
+								  */
+			while (A && B) {
+				if (!head) {
+					if (Compare->Compare(A->Data, B->Data)) {
+						head = A;//setting head of the output list to A
+						previous = A; //initializing previous
+						A = A->Next;
+					}
+					else {
+						head = B;//setting head of the output list to B
+						previous = B;//initializing previous
+						B = B->Next;
+					}
+				}
+				else//when head is already set
+				{
+					if (Compare->Compare(A->Data, B->Data)) {
 						if (previous->Next != A)
 							previous->Next = A;
 						A = A->Next;//Moved A forward but keeping B at the same position
@@ -523,13 +642,13 @@ namespace DataLib {
 			Node* This_T = this->TopOfList;
 			
 			//Create first node
-			This_P = new Node(Copy_P, nullptr);
+			This_P = new Node(Copy_P);
 			This_T = This_P;
 			Copy_P = Copy_P->Next;
 			
 			//Copy subsequent nodes.
 			while (Copy_P != nullptr) {
-				This_P = new Node(Copy_P, nullptr);
+				This_P = new Node(Copy_P);
 				This_T->Next = This_P;
 				This_T = This_P;
 				Copy_P = Copy_P->Next;
@@ -588,13 +707,6 @@ namespace DataLib {
 		if (TopOfList != nullptr) {
 			delete TopOfList;
 		}
-	}
-
-	template<class DataType>
-	List<DataType>* List<DataType>::Clone() const {
-		
-		List Copy(*this);
-		return &Copy;
 	}
 
 	template<class DataType>
@@ -779,6 +891,29 @@ namespace DataLib {
 			}
 			else if (Size > 4000) {
 				TopOfList = MergeSortIterative(TopOfList);
+			}
+			else {
+				return false;
+			}
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	template<class DataType>
+	inline bool List<DataType>::Sort(Comparator<DataType> * Compare) {
+		
+		if (State == Empty || Size == 1) {
+			return true;
+		}
+		else if (State == Valid) {
+			if (Size <= 4000) {
+				TopOfList = MergeSort(TopOfList, Compare);
+			}
+			else if (Size > 4000) {
+				TopOfList = MergeSortIterative(TopOfList, Compare);
 			}
 			else {
 				return false;

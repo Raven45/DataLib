@@ -14,6 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ***********************************************************************/
 
+#ifndef DATALIB_CONFIG
+#define DATALIB_CONFIG
+
 #ifdef _Win32
 	#define WindowsLegacy
 #endif
@@ -31,4 +34,6 @@ Unix compatibility for null pointers.
 ***********************************************************************/
 #ifdef Unix
 	#define nullptr 0
+#endif
+
 #endif

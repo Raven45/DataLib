@@ -18,12 +18,13 @@ limitations under the License.
 #ifndef DATALIB_COMPARATOR
 #define DATALIB_COMPARATOR
 
-#include "Object.h"
-
 namespace DataLib {
 	
-	class Comparator: public Object {
+	template <class DataType>
+	class Comparator {
 		
+		public:
+			virtual bool Compare(DataType A, DataType B) = 0;
 	};
 }
 
